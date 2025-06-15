@@ -1,2 +1,2 @@
-# secj4383-devops-project
-University project for Software Construction (SECJ4383)
+# SECJ4383 Software Construction Project
+This repository contains DevOps pipeline and source code for our UTM Software Construction Project.
