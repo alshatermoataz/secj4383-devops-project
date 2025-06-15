@@ -6,7 +6,7 @@ pipeline {
     }
 
     tools {
-        nodejs 'NodeJS'  // Must be configured in Jenkins tools
+        nodejs 'NodeJS'
     }
 
     stages {
@@ -17,6 +17,8 @@ pipeline {
             }
         }
 
+        // Commented out because no package.json yet
+        /*
         stage('Install Dependencies') {
             steps {
                 echo 'Installing NPM packages...'
@@ -37,6 +39,7 @@ pipeline {
                 sh 'docker build -t ecommerce-devops-app .'
             }
         }
+        */
     }
 
     post {
