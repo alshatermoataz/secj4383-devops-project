@@ -2,6 +2,7 @@
 # Node.js / Next.js ignores
 # =========================
 
+**/node_modules/
 node_modules/             # Dependency directory – never push this
 .next/                   # Next.js build output
 out/                     # Next.js static export output (optional)
