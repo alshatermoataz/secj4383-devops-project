@@ -40,13 +40,58 @@ export interface Order {
 
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: 'customer' | 'admin';
+  role: 'customer' | 'admin' | 'guest';
   phoneNumber?: string;
-  address?: string;
+  addresses: Address[];
+  isActive: boolean;
+  profilePicture?: string;
+  preferences?: {
+    newsletter: boolean;
+    notifications: boolean;
+  };
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface Address {
+  id: string;
+  type: 'home' | 'work' | 'other';
+  isDefault: boolean;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+}
+
+export interface UserRegistration {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+}
+
+export interface UserLogin {
+  email: string;
+  password: string;
+}
+
+export interface UserProfile {
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  profilePicture?: string;
+  preferences?: {
+    newsletter: boolean;
+    notifications: boolean;
+  };
 }
 
 export interface AuthenticatedUser {
