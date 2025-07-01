@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import express, { Response, NextFunction } from 'express';
 import * as admin from 'firebase-admin';
 import { db } from '../index';
 import { User } from '../types/express';
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends express.Request {
   user?: {
     uid: string;
     email?: string;
@@ -18,7 +18,7 @@ export const authenticateToken = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers?.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
@@ -65,12 +65,12 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
-export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  return requireRole(['admin'])(req, res, next);
+export const requireAdmin = (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  requireRole(['admin'])(req, _res, next);
 };
 
-export const requireCustomer = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  return requireRole(['customer', 'admin'])(req, res, next);
+export const requireCustomer = (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  requireRole(['customer', 'admin'])(req, _res, next);
 };
 
 export const optionalAuth = async (
@@ -79,7 +79,7 @@ export const optionalAuth = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers?.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
