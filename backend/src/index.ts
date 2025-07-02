@@ -18,8 +18,9 @@ admin.initializeApp({
   projectId: process.env.FIREBASE_PROJECT_ID,
 });
 
-// Initialize Firestore
+// Initialize Firestore with settings to ignore undefined properties
 export const db = getFirestore();
+db.settings({ ignoreUndefinedProperties: true });
 
 // Create Express app
 const app = express();
@@ -37,12 +38,16 @@ import orderRoutes from './routes/orders';
 import userRoutes from './routes/users';
 import authRoutes from './routes/auth';
 import addressRoutes from './routes/addresses';
+import categoryRoutes from './routes/categories';
+import cartRoutes from './routes/cart';
 
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

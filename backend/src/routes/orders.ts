@@ -1,44 +1,62 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { db } from '../index';
-import { Order, Product } from '../types/express';
-import { QueryDocumentSnapshot, DocumentData, CollectionReference } from 'firebase-admin/firestore';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-// Get all orders (with optional user filter)
-router.get('/', async (_req: express.Request, res: express.Response) => {
+// Get user's orders (order history)
+router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: express.Response) => {
   try {
-    const ordersCollection = db.collection('orders') as CollectionReference<DocumentData>;
-    const ordersSnapshot = await ordersCollection.orderBy('createdAt', 'desc').get();
-    const orders = ordersSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+    const userId = req.user?.uid;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const ordersQuery = await db.collection('orders')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const orders = ordersQuery.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    })) as Order[];
+    }));
+
     res.json(orders);
+
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Order fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
   }
 });
 
-// Get a single order
-router.get('/:id', async (req, res) => {
+// Get specific order details
+router.get('/:orderId', authenticateToken, async (req: AuthenticatedRequest, res: express.Response) => {
   try {
-    const orderDoc = await db.collection('orders').doc(req.params.id).get();
+    const userId = req.user?.uid;
+    const { orderId } = req.params;
+
+    const orderDoc = await db.collection('orders').doc(orderId).get();
     
     if (!orderDoc.exists) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const order = {
-      id: orderDoc.id,
-      ...orderDoc.data()
-    } as Order;
+    const orderData = orderDoc.data();
+    
+    // Check if user owns this order (or is admin)
+    if (orderData?.userId !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
-    res.json(order);
+    res.json({
+      id: orderDoc.id,
+      ...orderData
+    });
+
   } catch (error) {
-    console.error('Error fetching order:', error);
+    console.error('Order fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
   }
 });

@@ -47,9 +47,9 @@ router.post('/',
     body('state').notEmpty().trim().withMessage('State is required'),
     body('zipCode').notEmpty().trim().withMessage('ZIP code is required'),
     body('country').notEmpty().trim().withMessage('Country is required'),
-    body('firstName').notEmpty().trim().withMessage('First name is required'),
-    body('lastName').notEmpty().trim().withMessage('Last name is required'),
-    body('phoneNumber').optional().isMobilePhone('any'),
+    body('firstName').optional().notEmpty().trim(),
+    body('lastName').optional().notEmpty().trim(),
+    body('phoneNumber').optional().matches(/^\+?[\d\s\-\(\)\.]+$/),
     body('isDefault').optional().isBoolean(),
   ],
   async (req: AuthenticatedRequest, res: express.Response) => {
@@ -75,9 +75,30 @@ router.post('/',
       }
 
       const userData = userDoc.data();
-      const currentAddresses = userData?.addresses || [];
+      let currentAddresses = userData?.addresses || [];
 
-      const newAddress: Address = {
+      // Clean up existing addresses to remove undefined values
+      currentAddresses = currentAddresses.map((addr: any) => {
+        const cleanAddr: any = {
+          id: addr.id,
+          type: addr.type,
+          isDefault: addr.isDefault || false,
+          street: addr.street,
+          city: addr.city,
+          state: addr.state,
+          zipCode: addr.zipCode,
+          country: addr.country,
+        };
+        
+        if (addr.firstName) cleanAddr.firstName = addr.firstName;
+        if (addr.lastName) cleanAddr.lastName = addr.lastName;
+        if (addr.phoneNumber) cleanAddr.phoneNumber = addr.phoneNumber;
+        
+        return cleanAddr;
+      });
+
+      // Create the new address object, filtering out undefined values
+      const addressData: any = {
         id: generateId(),
         type: req.body.type,
         isDefault: req.body.isDefault || false,
@@ -86,10 +107,20 @@ router.post('/',
         state: req.body.state,
         zipCode: req.body.zipCode,
         country: req.body.country,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumber: req.body.phoneNumber,
       };
+
+      // Only add optional fields if they are provided
+      if (req.body.firstName) {
+        addressData.firstName = req.body.firstName;
+      }
+      if (req.body.lastName) {
+        addressData.lastName = req.body.lastName;
+      }
+      if (req.body.phoneNumber) {
+        addressData.phoneNumber = req.body.phoneNumber;
+      }
+
+      const newAddress: Address = addressData;
 
       // If this is set as default, make all other addresses non-default
       if (newAddress.isDefault) {

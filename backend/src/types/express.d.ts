@@ -18,9 +18,28 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
-  stock?: number;
-  createdAt?: string;
+  compareAtPrice?: number; // Original price for discounts
+  category: string;
+  brand: string;
+  sku?: string;
+  stock: number;
+  images: string[];
+  thumbnail?: string;
+  isActive: boolean;
+  isFeatured?: boolean;
+  tags: string[];
+  specifications?: Record<string, any>;
+  rating?: {
+    average: number;
+    count: number;
+  };
+  dimensions?: {
+    weight?: number;
+    length?: number;
+    width?: number;
+    height?: number;
+  };
+  createdAt: string;
   updatedAt?: string;
 }
 
@@ -99,4 +118,51 @@ export interface AuthenticatedUser {
   uid: string;
   email?: string;
   displayName?: string;
-} 
+}
+
+export interface ProductFilters {
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  tags?: string[];
+  inStock?: boolean;
+  isFeatured?: boolean;
+  isActive?: boolean;
+}
+
+export interface ProductSearchQuery {
+  q?: string; // Search query
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  tags?: string;
+  inStock?: boolean;
+  isFeatured?: boolean;
+  sortBy?: 'name' | 'price' | 'createdAt' | 'rating' | 'popularity';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductSearchResult {
+  products: Product[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  parentId?: string;
+  imageUrl?: string;
+  isActive: boolean;
+  productCount?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
