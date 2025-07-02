@@ -1,7 +1,8 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { db } from '../index';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateToken, AuthenticatedRequest, requireRole } from '../middleware/auth';
+import { Query, DocumentData } from 'firebase-admin/firestore';
 
 const router = express.Router();
 
@@ -61,117 +62,206 @@ router.get('/:orderId', authenticateToken, async (req: AuthenticatedRequest, res
   }
 });
 
-// Create a new order
-router.post('/',
+// Update order status (admin only)
+router.put('/:orderId/status',
+  authenticateToken,
+  requireRole(['admin']),
   [
-    body('userId').notEmpty(),
-    body('items').isArray(),
-    body('items.*.productId').notEmpty(),
-    body('items.*.quantity').isInt({ min: 1 }),
-    body('shippingAddress').notEmpty(),
-    body('totalAmount').isFloat({ min: 0 }),
+    body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status'),
   ],
-  async (req: express.Request, res: express.Response) => {
+  async (req: AuthenticatedRequest, res: express.Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const { userId, items, shippingAddress, totalAmount } = req.body as Omit<Order, 'id' | 'status' | 'createdAt'>;
-
-      // Verify all products exist and have sufficient stock
-      for (const item of items) {
-        const productDoc = await db.collection('products').doc(item.productId).get();
-        if (!productDoc.exists) {
-          return res.status(400).json({ error: `Product ${item.productId} not found` });
-        }
-        const product = productDoc.data() as Product;
-        if (!product.stock || product.stock < item.quantity) {
-          return res.status(400).json({ error: `Insufficient stock for product ${product.name}` });
-        }
-      }
-
-      // Create the order
-      const orderRef = await db.collection('orders').add({
-        userId,
-        items,
-        shippingAddress,
-        totalAmount,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      });
-
-      // Update product stock
-      for (const item of items) {
-        const productRef = db.collection('products').doc(item.productId);
-        await db.runTransaction(async (transaction) => {
-          const productDoc = await transaction.get(productRef);
-          const product = productDoc.data() as Product;
-          if (!product.stock) {
-            throw new Error(`Product ${item.productId} has no stock information`);
-          }
-          transaction.update(productRef, { stock: product.stock - item.quantity });
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
         });
       }
 
-      const order: Order = {
-        id: orderRef.id,
-        userId,
-        items,
-        shippingAddress,
-        totalAmount,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      };
+      const { orderId } = req.params;
+      const { status } = req.body;
 
-      res.status(201).json(order);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      res.status(500).json({ error: 'Failed to create order' });
-    }
-  }
-);
-
-// Update order status
-router.patch('/:id/status',
-  [
-    body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
-  ],
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const { status } = req.body as { status: Order['status'] };
-      const orderRef = db.collection('orders').doc(req.params.id);
-      const orderDoc = await orderRef.get();
-
+      const orderDoc = await db.collection('orders').doc(orderId).get();
+      
       if (!orderDoc.exists) {
         return res.status(404).json({ error: 'Order not found' });
       }
 
-      const updateData: Partial<Order> = {
+      await db.collection('orders').doc(orderId).update({
         status,
-        updatedAt: new Date().toISOString(),
-      };
+        updatedAt: new Date().toISOString()
+      });
 
-      await orderRef.update(updateData);
+      res.json({
+        message: 'Order status updated',
+        orderId,
+        status
+      });
 
-      const updatedDoc = await orderRef.get();
-      const updatedOrder = {
-        id: updatedDoc.id,
-        ...updatedDoc.data()
-      } as Order;
-
-      res.json(updatedOrder);
     } catch (error) {
-      console.error('Error updating order status:', error);
+      console.error('Order update error:', error);
       res.status(500).json({ error: 'Failed to update order status' });
     }
   }
 );
 
-export default router; 
+// Get all orders with filtering (admin only)
+router.get('/admin/all',
+  authenticateToken,
+  requireRole(['admin']),
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const status = req.query.status as string;
+      const startDate = req.query.startDate as string;
+      const endDate = req.query.endDate as string;
+
+      let query: Query<DocumentData> = db.collection('orders');
+
+      // Filter by status
+      if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+        query = query.where('status', '==', status);
+      }
+
+      // Filter by date range
+      if (startDate) {
+        query = query.where('createdAt', '>=', startDate);
+      }
+      if (endDate) {
+        query = query.where('createdAt', '<=', endDate);
+      }
+
+      const ordersQuery = await query.orderBy('createdAt', 'desc').get();
+      const allOrders = ordersQuery.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Manual pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const orders = allOrders.slice(startIndex, endIndex);
+
+      res.json({
+        orders,
+        totalCount: allOrders.length,
+        currentPage: page,
+        totalPages: Math.ceil(allOrders.length / limit),
+        hasNextPage: endIndex < allOrders.length,
+        hasPreviousPage: page > 1
+      });
+
+    } catch (error) {
+      console.error('Orders fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+  }
+);
+
+// Get order analytics (admin only)
+router.get('/admin/analytics',
+  authenticateToken,
+  requireRole(['admin']),
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const ordersQuery = await db.collection('orders').get();
+      const orders = ordersQuery.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const recentOrders = orders.filter(order => 
+        new Date(order.createdAt) >= thirtyDaysAgo
+      );
+
+      const weeklyOrders = orders.filter(order => 
+        new Date(order.createdAt) >= sevenDaysAgo
+      );
+
+      const analytics = {
+        totalOrders: orders.length,
+        totalRevenue: orders.reduce((sum, order) => sum + (order.total || 0), 0),
+        averageOrderValue: orders.length > 0 
+          ? orders.reduce((sum, order) => sum + (order.total || 0), 0) / orders.length 
+          : 0,
+        ordersByStatus: {
+          pending: orders.filter(o => o.status === 'pending').length,
+          processing: orders.filter(o => o.status === 'processing').length,
+          shipped: orders.filter(o => o.status === 'shipped').length,
+          delivered: orders.filter(o => o.status === 'delivered').length,
+          cancelled: orders.filter(o => o.status === 'cancelled').length,
+        },
+        recentMetrics: {
+          ordersLast30Days: recentOrders.length,
+          revenueLast30Days: recentOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+          ordersLast7Days: weeklyOrders.length,
+          revenueLast7Days: weeklyOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+        },
+        topCustomers: Object.entries(
+          orders.reduce((acc: any, order) => {
+            acc[order.userId] = (acc[order.userId] || 0) + (order.total || 0);
+            return acc;
+          }, {})
+        ).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 10)
+      };
+
+      res.json(analytics);
+
+    } catch (error) {
+      console.error('Analytics fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch analytics' });
+    }
+  }
+);
+
+// Bulk update order status (admin only)
+router.patch('/admin/bulk-update',
+  authenticateToken,
+  requireRole(['admin']),
+  [
+    body('orderIds').isArray({ min: 1 }).withMessage('Order IDs array is required'),
+    body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status'),
+  ],
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const { orderIds, status } = req.body;
+      const batch = db.batch();
+
+      for (const orderId of orderIds) {
+        const orderRef = db.collection('orders').doc(orderId);
+        batch.update(orderRef, {
+          status,
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      await batch.commit();
+
+      res.json({
+        message: 'Bulk order update completed successfully',
+        updatedOrderCount: orderIds.length,
+        newStatus: status
+      });
+
+    } catch (error) {
+      console.error('Bulk update error:', error);
+      res.status(500).json({ error: 'Failed to bulk update orders' });
+    }
+  }
+);
+
+export default router;

@@ -166,3 +166,38 @@ export interface Category {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface Cart {
+  userId: string;
+  items: CartItem[];
+  total: number;
+  updatedAt: string;
+}
+
+export interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
+export interface EnhancedOrder {
+  id: string;
+  userId: string;
+  items: OrderItem[];
+  total: number;
+  shippingAddress: Address;
+  paymentMethod: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}

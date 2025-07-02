@@ -2,6 +2,7 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { db } from '../index';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { Cart, CartItem, Product, EnhancedOrder, Address } from '../types/express';
 
 const router = express.Router();
 
@@ -16,10 +17,10 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: expres
     const cartDoc = await db.collection('carts').doc(userId).get();
     
     if (!cartDoc.exists) {
-      return res.json({ items: [], total: 0 });
+      return res.json({ items: [], total: 0 } as Partial<Cart>);
     }
 
-    const cartData = cartDoc.data();
+    const cartData = cartDoc.data() as Cart;
     res.json(cartData);
 
   } catch (error) {
@@ -58,31 +59,37 @@ router.post('/add',
         return res.status(404).json({ error: 'Product not found' });
       }
 
-      const product = { id: productDoc.id, ...productDoc.data() } as any;
+      const product = { id: productDoc.id, ...productDoc.data() } as Product;
 
       // Get current cart
       const cartDoc = await db.collection('carts').doc(userId).get();
-      let cartData: any = cartDoc.exists ? cartDoc.data() : { items: [], total: 0 };
+      let cartData: Cart = cartDoc.exists ? cartDoc.data() as Cart : { 
+        userId, 
+        items: [], 
+        total: 0, 
+        updatedAt: new Date().toISOString() 
+      };
 
       // Check if item already exists in cart
-      const existingItemIndex = cartData.items.findIndex((item: any) => item.productId === productId);
+      const existingItemIndex = cartData.items.findIndex((item: CartItem) => item.productId === productId);
 
       if (existingItemIndex >= 0) {
         // Update quantity
         cartData.items[existingItemIndex].quantity += quantity;
       } else {
         // Add new item
-        cartData.items.push({
+        const newItem: CartItem = {
           productId,
           name: product.name,
           price: product.price,
           image: product.images?.[0] || '',
           quantity
-        });
+        };
+        cartData.items.push(newItem);
       }
 
       // Calculate total
-      cartData.total = cartData.items.reduce((sum: number, item: any) => 
+      cartData.total = cartData.items.reduce((sum: number, item: CartItem) => 
         sum + (item.price * item.quantity), 0
       );
       cartData.updatedAt = new Date().toISOString();
@@ -131,14 +138,14 @@ router.put('/update',
         return res.status(404).json({ error: 'Cart not found' });
       }
 
-      let cartData: any = cartDoc.data();
+      let cartData: Cart = cartDoc.data() as Cart;
 
       if (quantity === 0) {
         // Remove item
-        cartData.items = cartData.items.filter((item: any) => item.productId !== productId);
+        cartData.items = cartData.items.filter((item: CartItem) => item.productId !== productId);
       } else {
         // Update quantity
-        const itemIndex = cartData.items.findIndex((item: any) => item.productId === productId);
+        const itemIndex = cartData.items.findIndex((item: CartItem) => item.productId === productId);
         if (itemIndex >= 0) {
           cartData.items[itemIndex].quantity = quantity;
         } else {
@@ -147,7 +154,7 @@ router.put('/update',
       }
 
       // Recalculate total
-      cartData.total = cartData.items.reduce((sum: number, item: any) => 
+      cartData.total = cartData.items.reduce((sum: number, item: CartItem) => 
         sum + (item.price * item.quantity), 0
       );
       cartData.updatedAt = new Date().toISOString();
@@ -181,11 +188,11 @@ router.delete('/remove/:productId', authenticateToken, async (req: Authenticated
       return res.status(404).json({ error: 'Cart not found' });
     }
 
-    let cartData: any = cartDoc.data();
-    cartData.items = cartData.items.filter((item: any) => item.productId !== productId);
+    let cartData: Cart = cartDoc.data() as Cart;
+    cartData.items = cartData.items.filter((item: CartItem) => item.productId !== productId);
 
     // Recalculate total
-    cartData.total = cartData.items.reduce((sum: number, item: any) => 
+    cartData.total = cartData.items.reduce((sum: number, item: CartItem) => 
       sum + (item.price * item.quantity), 0
     );
     cartData.updatedAt = new Date().toISOString();
@@ -249,7 +256,7 @@ router.post('/checkout',
         return res.status(400).json({ error: 'Cart is empty' });
       }
 
-      const cartData: any = cartDoc.data();
+      const cartData: Cart = cartDoc.data() as Cart;
       if (cartData.items.length === 0) {
         return res.status(400).json({ error: 'Cart is empty' });
       }
@@ -257,7 +264,7 @@ router.post('/checkout',
       // Get user data for shipping address
       const userDoc = await db.collection('users').doc(userId).get();
       const userData: any = userDoc.data();
-      const shippingAddress = userData?.addresses?.find((addr: any) => addr.id === req.body.shippingAddressId);
+      const shippingAddress = userData?.addresses?.find((addr: Address) => addr.id === req.body.shippingAddressId);
 
       if (!shippingAddress) {
         return res.status(400).json({ error: 'Invalid shipping address' });
@@ -265,10 +272,16 @@ router.post('/checkout',
 
       // Create order
       const orderId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-      const orderData = {
+      const orderData: EnhancedOrder = {
         id: orderId,
         userId,
-        items: cartData.items,
+        items: cartData.items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity
+        })),
         total: cartData.total,
         shippingAddress,
         paymentMethod: req.body.paymentMethod,

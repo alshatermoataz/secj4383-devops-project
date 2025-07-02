@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import * as admin from 'firebase-admin';
 import { db } from '../index';
 import { User, UserRegistration, UserLogin } from '../types/express';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateToken, AuthenticatedRequest, requireRole } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -312,5 +312,180 @@ router.post('/logout', authenticateToken, async (req: AuthenticatedRequest, res:
     res.status(500).json({ error: 'Logout failed' });
   }
 });
+
+// Create admin user (only existing admin can create new admins)
+router.post('/admin/create',
+  authenticateToken,
+  requireRole(['admin']),
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('firstName').notEmpty().trim().withMessage('First name is required'),
+    body('lastName').notEmpty().trim().withMessage('Last name is required'),
+    body('phoneNumber').optional().matches(/^\+?[\d\s\-\(\)\.]+$/).withMessage('Invalid phone number format'),
+  ],
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const { email, password, firstName, lastName, phoneNumber } = req.body;
+
+      // Check if user already exists in Firestore
+      const existingUser = await db.collection('users')
+        .where('email', '==', email)
+        .get();
+
+      if (!existingUser.empty) {
+        return res.status(400).json({ error: 'User with this email already exists' });
+      }
+
+      // Create user in Firebase Auth
+      const userRecord = await admin.auth().createUser({
+        email,
+        password,
+        displayName: `${firstName} ${lastName}`,
+      });
+
+      // Create admin user profile in Firestore
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        role: 'admin',
+        addresses: [],
+        isActive: true,
+        phoneNumber,
+        preferences: {
+          newsletter: false,
+          notifications: true
+        },
+        createdAt: new Date().toISOString(),
+        createdBy: req.user?.uid
+      };
+
+      await db.collection('users').doc(userRecord.uid).set(userData);
+
+      res.status(201).json({
+        message: 'Admin user created successfully',
+        user: {
+          id: userRecord.uid,
+          ...userData
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Admin creation error:', error);
+      
+      if (error.code === 'auth/email-already-exists') {
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+      
+      res.status(500).json({ error: 'Failed to create admin user' });
+    }
+  }
+);
+
+// Get all admin users (admin only)
+router.get('/admin/users',
+  authenticateToken,
+  requireRole(['admin']),
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const adminUsersQuery = await db.collection('users')
+        .where('role', '==', 'admin')
+        .get();
+
+      const adminUsers = adminUsersQuery.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role,
+          isActive: data.isActive,
+          createdAt: data.createdAt,
+          createdBy: data.createdBy
+        };
+      });
+
+      res.json(adminUsers);
+
+    } catch (error) {
+      console.error('Admin users fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch admin users' });
+    }
+  }
+);
+
+// Admin login (special endpoint that returns admin token)
+router.post('/admin/login',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').notEmpty(),
+  ],
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const { email } = req.body;
+
+      // Get user from Firestore and verify admin role
+      const userQuery = await db.collection('users')
+        .where('email', '==', email)
+        .get();
+
+      if (userQuery.empty) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const userDoc = userQuery.docs[0];
+      const userData = { id: userDoc.id, ...userDoc.data() } as any;
+
+      if (!userData.isActive) {
+        return res.status(403).json({ error: 'Account is deactivated' });
+      }
+
+      if (userData.role !== 'admin') {
+        return res.status(403).json({ error: 'Access denied. Admin access required.' });
+      }
+
+      // Generate custom token for admin
+      const customToken = await admin.auth().createCustomToken(userDoc.id, { 
+        role: 'admin',
+        purpose: 'admin-access' 
+      });
+
+      res.json({
+        message: 'Admin login successful',
+        user: {
+          id: userData.id,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          role: userData.role
+        },
+        customToken,
+        idToken: customToken // For server-side testing
+      });
+
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ error: 'Admin login failed' });
+    }
+  }
+);
 
 export default router;

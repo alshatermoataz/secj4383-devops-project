@@ -526,4 +526,262 @@ router.delete('/:id',
   }
 );
 
-export default router; 
+// Get all products including inactive ones (Admin only)
+router.get('/admin/all',
+  authenticateToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const status = req.query.status as string; // 'active', 'inactive', 'all'
+
+      let query: Query<DocumentData> = db.collection('products');
+
+      // Filter by status
+      if (status === 'active') {
+        query = query.where('isActive', '==', true);
+      } else if (status === 'inactive') {
+        query = query.where('isActive', '==', false);
+      }
+      // If status is 'all' or undefined, don't filter
+
+      const querySnapshot = await query
+        .orderBy('createdAt', 'desc')
+        .get();
+
+      const allProducts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Product[];
+
+      // Manual pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const products = allProducts.slice(startIndex, endIndex);
+
+      res.json({
+        products,
+        totalCount: allProducts.length,
+        currentPage: page,
+        totalPages: Math.ceil(allProducts.length / limit),
+        hasNextPage: endIndex < allProducts.length,
+        hasPreviousPage: page > 1
+      });
+
+    } catch (error) {
+      console.error('Error fetching admin products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
+  }
+);
+
+// Update product stock (Admin only)
+router.patch('/:id/stock',
+  authenticateToken,
+  requireAdmin,
+  [
+    body('stock').isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+    body('action').optional().isIn(['set', 'add', 'subtract']).withMessage('Action must be set, add, or subtract'),
+  ],
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const productRef = db.collection('products').doc(req.params.id);
+      const productDoc = await productRef.get();
+
+      if (!productDoc.exists) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      const currentProduct = productDoc.data() as Product;
+      const { stock, action = 'set' } = req.body;
+
+      let newStock: number;
+      switch (action) {
+        case 'add':
+          newStock = currentProduct.stock + stock;
+          break;
+        case 'subtract':
+          newStock = Math.max(0, currentProduct.stock - stock);
+          break;
+        default: // 'set'
+          newStock = stock;
+      }
+
+      await productRef.update({
+        stock: newStock,
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({
+        message: 'Stock updated successfully',
+        productId: req.params.id,
+        previousStock: currentProduct.stock,
+        newStock,
+        action
+      });
+
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      res.status(500).json({ error: 'Failed to update stock' });
+    }
+  }
+);
+
+// Update product pricing (Admin only)
+router.patch('/:id/pricing',
+  authenticateToken,
+  requireAdmin,
+  [
+    body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
+    body('compareAtPrice').optional().isFloat({ min: 0 }).withMessage('Compare at price must be positive'),
+  ],
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const productRef = db.collection('products').doc(req.params.id);
+      const productDoc = await productRef.get();
+
+      if (!productDoc.exists) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      const updateData: any = {
+        price: req.body.price,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (req.body.compareAtPrice !== undefined) {
+        updateData.compareAtPrice = req.body.compareAtPrice;
+      }
+
+      await productRef.update(updateData);
+
+      const updatedDoc = await productRef.get();
+      const updatedProduct = {
+        id: updatedDoc.id,
+        ...updatedDoc.data()
+      } as Product;
+
+      res.json({
+        message: 'Pricing updated successfully',
+        product: updatedProduct
+      });
+
+    } catch (error) {
+      console.error('Error updating pricing:', error);
+      res.status(500).json({ error: 'Failed to update pricing' });
+    }
+  }
+);
+
+// Bulk update products (Admin only)
+router.patch('/admin/bulk-update',
+  authenticateToken,
+  requireAdmin,
+  [
+    body('productIds').isArray({ min: 1 }).withMessage('Product IDs array is required'),
+    body('updates').isObject().withMessage('Updates object is required'),
+  ],
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array() 
+        });
+      }
+
+      const { productIds, updates } = req.body;
+      const batch = db.batch();
+
+      for (const productId of productIds) {
+        const productRef = db.collection('products').doc(productId);
+        batch.update(productRef, {
+          ...updates,
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      await batch.commit();
+
+      res.json({
+        message: 'Bulk update completed successfully',
+        updatedProductCount: productIds.length,
+        updates
+      });
+
+    } catch (error) {
+      console.error('Error bulk updating products:', error);
+      res.status(500).json({ error: 'Failed to bulk update products' });
+    }
+  }
+);
+
+// Get product analytics (Admin only)
+router.get('/admin/analytics',
+  authenticateToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res: express.Response) => {
+    try {
+      const productsQuery = await db.collection('products').get();
+      const products = productsQuery.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Product[];
+
+      const analytics = {
+        totalProducts: products.length,
+        activeProducts: products.filter(p => p.isActive).length,
+        inactiveProducts: products.filter(p => !p.isActive).length,
+        featuredProducts: products.filter(p => p.isFeatured).length,
+        outOfStockProducts: products.filter(p => p.stock === 0).length,
+        lowStockProducts: products.filter(p => p.stock > 0 && p.stock <= 10).length,
+        totalInventoryValue: products
+          .filter(p => p.isActive)
+          .reduce((sum, p) => sum + (p.price * p.stock), 0),
+        averagePrice: products
+          .filter(p => p.isActive)
+          .reduce((sum, p) => sum + p.price, 0) / products.filter(p => p.isActive).length || 0,
+        categoriesCount: [...new Set(products.map(p => p.category))].length,
+        brandsCount: [...new Set(products.map(p => p.brand))].length,
+        topCategories: Object.entries(
+          products.reduce((acc: any, p) => {
+            acc[p.category] = (acc[p.category] || 0) + 1;
+            return acc;
+          }, {})
+        ).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 5),
+        topBrands: Object.entries(
+          products.reduce((acc: any, p) => {
+            acc[p.brand] = (acc[p.brand] || 0) + 1;
+            return acc;
+          }, {})
+        ).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 5)
+      };
+
+      res.json(analytics);
+
+    } catch (error) {
+      console.error('Error getting analytics:', error);
+      res.status(500).json({ error: 'Failed to get analytics' });
+    }
+  }
+);
+
+export default router;
