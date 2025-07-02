@@ -4393,7 +4393,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\box\box.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\box\box.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4402,7 +4402,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\box\box.mjs#Box`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\box\box.mjs#Box`);
 
 
 /***/ }),
@@ -4419,7 +4419,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\button\button.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\button\button.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4428,7 +4428,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\button\button.mjs#Button`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\button\button.mjs#Button`);
 
 
 /***/ }),
@@ -4445,7 +4445,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\chakra-provider.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\chakra-provider.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4454,7 +4454,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\chakra-provider.mjs#ChakraProvider`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\chakra-provider.mjs#ChakraProvider`);
 
 
 /***/ }),
@@ -4471,7 +4471,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\container\container.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\container\container.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4480,7 +4480,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\container\container.mjs#Container`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\container\container.mjs#Container`);
 
 
 /***/ }),
@@ -4497,7 +4497,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\grid\simple-grid.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\grid\simple-grid.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4506,7 +4506,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\grid\simple-grid.mjs#SimpleGrid`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\grid\simple-grid.mjs#SimpleGrid`);
 
 
 /***/ }),
@@ -4523,7 +4523,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\heading.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\heading.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4532,7 +4532,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\heading.mjs#Heading`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\heading.mjs#Heading`);
 
 
 /***/ }),
@@ -4549,7 +4549,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/build/webpack/loaders/next-flight-loader/module-proxy */ "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-loader/module-proxy.js");
 
-const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\text.mjs`)
+const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\text.mjs`)
 
 // Accessing the __esModule property and exporting $$typeof are required here.
 // The __esModule getter forces the proxy target to create the default export
@@ -4558,7 +4558,7 @@ const proxy = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy
 const { __esModule, $$typeof } = proxy;
 const __default__ = proxy.default;
 
-const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\Moataz Al-Shater\OneDrive\Desktop\UTm Classes\S8\SC\Project\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\text.mjs#Text`);
+const e0 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__WEBPACK_IMPORTED_MODULE_0__.createProxy)(String.raw`C:\Users\reuni\secj4383-devops-project\frontend\node_modules\@chakra-ui\react\dist\esm\typography\text.mjs#Text`);
 
 
 /***/ })
