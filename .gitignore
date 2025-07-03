@@ -67,3 +67,9 @@ build/                   # Build folder (other setups)
 .firebase/               # Firebase project files (CLI state)
 
 node_modules
+
+# =========================
+# Security
+# =========================
+
+backend/serviceAccountKey.json
