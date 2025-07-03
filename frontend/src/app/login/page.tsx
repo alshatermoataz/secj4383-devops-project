@@ -38,12 +38,33 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const data = await response.json();
+
+      // ✅ Optional: store the token (e.g., in localStorage)
+      localStorage.setItem("token", data.token);
+
       toast({
         title: "Login successful",
         status: "success",
         duration: 3000,
       });
+
       router.push("/products");
     } catch (error) {
       toast({

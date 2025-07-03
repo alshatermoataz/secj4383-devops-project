@@ -31,7 +31,11 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:3002/products");
+        const response = await axios.get(
+          "http://localhost:3001/api/products/featured"
+        );
+
+        console.log("response: ", response);
         setProducts(response.data);
       } catch (error) {
         toast({
