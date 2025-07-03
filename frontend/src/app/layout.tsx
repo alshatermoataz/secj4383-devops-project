@@ -1,12 +1,15 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { Inter } from 'next/font/google';
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { ChakraProvider } from "@chakra-ui/react";
+import { CartProvider } from "@/contexts/CartContext";
+import Navigation from "@/components/Navigation";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'E-Commerce App',
-  description: 'A modern e-commerce platform built with Next.js and Firebase',
+  title: "ShopLux - Premium E-Commerce",
+  description:
+    "Discover amazing products at unbeatable prices. Your premium shopping destination.",
 };
 
 export default function RootLayout({
@@ -18,9 +21,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ChakraProvider>
-          {children}
+          <CartProvider>
+            <Navigation />
+            {children}
+          </CartProvider>
         </ChakraProvider>
       </body>
     </html>
   );
-} 
+}

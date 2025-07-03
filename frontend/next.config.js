@@ -5,7 +5,7 @@ const nextConfig = {
     domains: ['firebasestorage.googleapis.com'], // Add your image domains here
   },
   env: {
-    NEXT_PUBLIC_API_URL: "http://localhost:3002",
+    NEXT_PUBLIC_API_URL: "http://localhost:3001/api",
     NEXT_PUBLIC_FIREBASE_API_KEY: "AIzaSyCKW1nL8OHzmnh_SZzZGzMeA01WjTe001E",
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "altf4riends-sc-3fd4a.firebaseapp.com",
     NEXT_PUBLIC_FIREBASE_PROJECT_ID: "altf4riends-sc-3fd4a",
