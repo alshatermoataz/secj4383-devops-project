@@ -46,8 +46,9 @@ router.get('/:id', async (req: express.Request, res: express.Response) => {
 // Create a new user
 router.post('/',
   [
-    body('email').isEmail(),
-    body('name').notEmpty().trim(),
+    body('email').isEmail().normalizeEmail(),
+    body('firstName').notEmpty().trim(),
+    body('lastName').notEmpty().trim(),
     body('role').isIn(['customer', 'admin']),
   ],
   async (req: express.Request, res: express.Response) => {
@@ -57,7 +58,7 @@ router.post('/',
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, name, role } = req.body as Omit<User, 'id' | 'createdAt'>;
+      const { email, firstName, lastName, role, phoneNumber } = req.body;
 
       // Check if user already exists
       const existingUser = await db.collection('users')
@@ -69,17 +70,33 @@ router.post('/',
       }
 
       const userRef = await db.collection('users').add({
+        firstName,
+        lastName,
         email,
-        name,
         role,
+        phoneNumber: phoneNumber || null,
+        addresses: [],
+        isActive: true,
+        preferences: {
+          newsletter: false,
+          notifications: true
+        },
         createdAt: new Date().toISOString(),
       });
 
       const user: User = {
         id: userRef.id,
+        firstName,
+        lastName,
         email,
-        name,
         role,
+        phoneNumber,
+        addresses: [],
+        isActive: true,
+        preferences: {
+          newsletter: false,
+          notifications: true
+        },
         createdAt: new Date().toISOString(),
       };
 
@@ -94,9 +111,12 @@ router.post('/',
 // Update a user
 router.put('/:id',
   [
-    body('email').optional().isEmail(),
-    body('name').optional().trim(),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('firstName').optional().notEmpty().trim(),
+    body('lastName').optional().notEmpty().trim(),
     body('role').optional().isIn(['customer', 'admin']),
+    body('phoneNumber').optional().isMobilePhone('any'),
+    body('isActive').optional().isBoolean(),
   ],
   async (req: express.Request, res: express.Response) => {
     try {
@@ -112,10 +132,15 @@ router.put('/:id',
         return res.status(404).json({ error: 'User not found' });
       }
 
-      const updateData: Partial<User> = {
+      const updateData = {
         ...req.body,
         updatedAt: new Date().toISOString(),
       };
+
+      // Remove undefined fields
+      Object.keys(updateData).forEach(key => 
+        updateData[key] === undefined && delete updateData[key]
+      );
 
       await userRef.update(updateData);
 
